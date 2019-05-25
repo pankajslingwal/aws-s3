@@ -15,8 +15,8 @@ var folder = 'myFolder/';
 // Configure aws with your accessKeyId and your secretAccessKey
 const s3 = new S3({
     region: 'us-west-2', // Put your aws region here
-    accessKeyId: 'AKIAVKAXD6K5DJ3GDAWF',
-    secretAccessKey: 'S9rrzYnodznumKa+zSYjlwx+bsi1x9YfE1y1uo+6'
+    accessKeyId: 'sdsd',
+    secretAccessKey: 'sdsdsddsdds'
 });
 // aws.config.update({
 //     region: 'us-west-2', // Put your aws region here
