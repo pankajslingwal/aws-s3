@@ -1,13 +1,8 @@
-// import entire SDK
 var express = require('express');
 var axios = require('axios');
-var aws = require('aws-sdk');
+var S3 = require('aws-sdk/clients/s3');
 var formidable = require('formidable');
 var fs = require('fs');
-// import AWS object without services
-//var AWS = require('aws-sdk/global');
-// import individual service
-//var S3 = require('aws-sdk/clients/s3');
 
 var uuidv4 = require('uuid/v4');
 
@@ -18,13 +13,18 @@ var bucketName = 'test-bucket-pankaj';
 var folder = 'myFolder/';
 
 // Configure aws with your accessKeyId and your secretAccessKey
-aws.config.update({
+const s3 = new S3({
     region: 'us-west-2', // Put your aws region here
     accessKeyId: 'AKIAVKAXD6K5DJ3GDAWF',
     secretAccessKey: 'S9rrzYnodznumKa+zSYjlwx+bsi1x9YfE1y1uo+6'
-})
+});
+// aws.config.update({
+//     region: 'us-west-2', // Put your aws region here
+//     accessKeyId: 'AKIAVKAXD6K5DJ3GDAWF',
+//     secretAccessKey: 'S9rrzYnodznumKa+zSYjlwx+bsi1x9YfE1y1uo+6'
+// })
 
-const s3 = new aws.S3();
+//const s3 = new aws.S3();
 
 
 app.post('/', function (req, res) {
@@ -34,7 +34,6 @@ app.post('/', function (req, res) {
         const file = files.myfile.name;
 
         let fileParts = file.split('.');
-        //const fileName = fileParts[0];
         const fileName = uuidv4();
         const fileType = fileParts[1];
 
@@ -51,8 +50,6 @@ app.post('/', function (req, res) {
         });
 
 
-
-
         //Make a request to the S3 API to get a signed URL which we can use to upload our file
         fs.readFile(files.myfile.path, function (err, data) {
             if (err) throw err; // Something went wrong!
@@ -66,7 +63,7 @@ app.post('/', function (req, res) {
                 ACL: 'public-read',
                 Body: data
             };
-            s3.putObject(s3Params, (err, data) => {
+            s3.upload(s3Params, (err, data) => {
 
             });
 
@@ -79,6 +76,7 @@ app.post('/', function (req, res) {
                 console.log('Temp File Delete');
             });
         });
+
 
         // // Make a request to the S3 API to get a signed URL which we can use to upload our file
         // s3.getSignedUrl('putObject', s3Params, (err, data) => {
