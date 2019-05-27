@@ -10,10 +10,10 @@ module.exports = function (config) {
             s3.deleteObject(params, function (err, data) {
                 if (err) {
                     console.error("Error deleting the file with key : " + key, err);
-                    reject('{status:0}');
+                    reject({status:0});
                 } else {
                     console.log("Successfully deleted a file with key : " + key);
-                    resolve('{status:1}');
+                    resolve({status:1});
                 }
             });
         });
@@ -51,10 +51,10 @@ module.exports = function (config) {
                 s3.upload(params, (err, data) => {
                     if (err) {
                         console.error("Error uploading File with key : " + folderName + fileName + '.' + fileType, err);
-                        reject('{status:0}');
+                        reject({status:0});
                     } else {
                         console.log('Successfully uploaded File with key : ' + folderName + fileName + '.' + fileType);
-                        resolve('{status:1}');
+                        resolve({status:1, fileName});
                     }
                 });
 
