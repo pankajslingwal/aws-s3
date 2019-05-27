@@ -10,13 +10,14 @@ const app = express();
 //Think of these scenario's
 
 const s3 = S3({
-    region: 'us-west-2',
-    accessKeyId: 'sdsds',
-    secretAccessKey: 'sdsd'
+    accessKeyId: 'adad',
+    secretAccessKey: 'asdad'
 });
 
 app.delete('/delete/:folder/:key', function (req, res) {
-    s3.deleteFile('test-bucket-pankaj', req.params.folder + '/' + req.params.key);
+    s3.deleteFile('test-bucket-pankaj', req.params.folder + '/' + req.params.key).then(function(val) {
+        res.send(val);
+     });
 });
 
 app.post('/', function (req, res) {
@@ -28,7 +29,9 @@ app.post('/', function (req, res) {
         const fileName = uuidv4();
         const fileType = fileParts[1];
 
-        s3.uploadFile('test-bucket-pankaj', 'myFolder/', files, fileName, fileType);
+        s3.uploadFile('test-bucket-pankaj', 'myFolder/', files, fileName, fileType).then(function(val) {
+            res.send(val);
+         });
     });
 });
 
