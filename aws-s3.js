@@ -2,70 +2,84 @@ const fs = require('fs');
 const S3 = require('aws-sdk/clients/s3');
 
 module.exports = function (config) {
+    //TODO: check for region also -- suddenly when region specified started giving error
+    config.apiVersion = '2006-03-01';
     this.s3 = new S3(config);
 
     this.deleteFile = (appName, key) => {
         return new Promise(function (resolve, reject) {
-            var params = { Bucket: appName, Key: key };
-            s3.deleteObject(params, function (err, data) {
-                if (err) {
-                    console.error("Error deleting the file with key : " + key, err);
-                    reject({status:0});
-                } else {
-                    console.log("Successfully deleted a file with key : " + key);
-                    resolve({status:1});
-                }
-            });
+            try {
+                var params = { Bucket: appName, Key: key };
+                s3.deleteObject(params, function (err, data) {
+                    if (err) {
+                        console.error("Error deleting the file with key : " + key, err);
+                        reject({ status: 0 });
+                    } else {
+                        console.log("Successfully deleted a file with key : " + key);
+                        resolve({ status: 1 });
+                    }
+                });
+            } catch (ex) {
+                reject({ status: 0 });
+            }
         });
     }
 
     this.uploadFile = (appName, folderName, files, fileName, fileType) => {
         return new Promise(function (resolve, reject) {
-            var headObjParams = { Bucket: appName, Key: folderName };
+            try {
+                var headObjParams = { Bucket: appName, Key: folderName };
 
-            s3.headObject(headObjParams, function (err, data) {
-                if (err && err.code === 'NotFound') {
-                    var params = { Bucket: bucketName, Key: folderName, ACL: 'public-read', Body: 'body does not matter' };
-                    s3.upload(params, function (err, data) {
+                s3.headObject(headObjParams, function (err, data) {
+                    if (err && err.code === 'NotFound') {
+                        var params = { Bucket: appName, Key: folderName, ACL: 'public-read', Body: 'body does not matter' };
+                        s3.upload(params, function (err, data) {
+                            if (err) {
+                                //what happends here ?
+                                //Below file will will be still uploaded with folder appended in KEY but folder will not be 
+                                //Created in s3...that should still be ok
+                                console.error("Error creating Folder with key : " + folderName, err);
+                            } else {
+                                console.log("Successfully created Folder with key : " + folderName);
+                            }
+                        });
+                    } else {
+                        console.log('Folder already exist with key : ' + folderName);
+                    }
+                });
+
+                fs.readFile(files.myfile.path, function (err, data) {
+                    if (err) throw err;
+
+                    const params = {
+                        Bucket: appName,
+                        Key: folderName + fileName + '.' + fileType,
+                        ContentType: fileType,
+                        ACL: 'public-read',
+                        Body: data
+                    };
+
+                    s3.upload(params, (err, data) => {
                         if (err) {
-                            console.error("Error creating Folder with key : " + folderName, err);
+                            console.error("Error uploading File with key : " + folderName + fileName + '.' + fileType, err);
+                            reject({ status: 0 });
                         } else {
-                            console.log("Successfully created Folder with key : " + folderName);
+                            console.log('Successfully uploaded File with key : ' + folderName + fileName + '.' + fileType);
+                            resolve({ status: 1, fileName });
                         }
                     });
-                } else {
-                    console.log('Folder already exist with key : ' + folderName);
-                }
-            });
 
-            fs.readFile(files.myfile.path, function (err, data) {
-                if (err) throw err;
-
-                const params = {
-                    Bucket: appName,
-                    Key: folderName + fileName + '.' + fileType,
-                    ContentType: fileType,
-                    ACL: 'public-read',
-                    Body: data
-                };
-                s3.upload(params, (err, data) => {
-                    if (err) {
-                        console.error("Error uploading File with key : " + folderName + fileName + '.' + fileType, err);
-                        reject({status:0});
-                    } else {
-                        console.log('Successfully uploaded File with key : ' + folderName + fileName + '.' + fileType);
-                        resolve({status:1, fileName});
-                    }
+                    fs.unlink(files.myfile.path, function (err) {
+                        if (err) {
+                            console.error("Error deleting temp folder", err);
+                        } else {
+                            console.log('Temp File Delete');
+                        }
+                    });
                 });
-
-                fs.unlink(files.myfile.path, function (err) {
-                    if (err) {
-                        console.error("Error deleting temp folder", err);
-                    } else {
-                        console.log('Temp File Delete');
-                    }
-                });
-            });
+            } catch (ex) {
+                reject({ status: 0 });
+            }
         })
     }
 

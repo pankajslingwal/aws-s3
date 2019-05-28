@@ -10,8 +10,8 @@ const app = express();
 //Think of these scenario's
 
 const s3 = S3({
-    accessKeyId: 'adad',
-    secretAccessKey: 'asdad'
+    accessKeyId: 'sdsdsd',
+    secretAccessKey: 'sdsds'
 });
 
 app.delete('/delete/:folder/:key', function (req, res) {
@@ -29,7 +29,7 @@ app.post('/', function (req, res) {
         const fileName = uuidv4();
         const fileType = fileParts[1];
 
-        s3.uploadFile('test-bucket-pankaj', 'myFolder/', files, fileName, fileType).then(function(val) {
+        s3.uploadFile('test-bucket-pankaj', '45745c60-7b1a-11e8-9c9c-2d42b21b1a3e/', files, fileName, fileType).then(function(val) {
             res.send(val);
          });
     });
